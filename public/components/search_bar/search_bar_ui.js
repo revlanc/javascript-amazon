@@ -1,5 +1,5 @@
-import * as _ from '../../utils/allenibrary.js'
-import Subscriber from '../../utils/subscriber.js'
+import * as _ from '../../utils/allenibrary.js';
+import Subscriber from '../../utils/subscriber.js';
 
 class SearchBarUI extends Subscriber {
   constructor({ stateManager, config: { inputSelector, buttonSelector } }) {
@@ -32,7 +32,7 @@ class SearchBarUI extends Subscriber {
   handleKeyup({ target, key }) {
     if (key.length === 1 || key === 'Backspace') {
       const param = { mode: 'suggestion', currentValue: target.value };
-      _.setDebounce((p) => this.publisher.setState(p), 1200, param);
+      _.setDebounce(p => this.publisher.setState(p), 1200, param);
     }
   }
 
@@ -43,12 +43,18 @@ class SearchBarUI extends Subscriber {
   handleKeydown(e) {
     const { target, key } = e;
     const keyMap = {
-      ArrowDown: () => this.publisher.setState({ mode: 'selection', arrowDirection: 'down' }),
-      ArrowUp: () => this.publisher.setState({ mode: 'selection', arrowDirection: 'up' }),
+      ArrowDown: () =>
+        this.publisher.setState({ mode: 'selection', arrowDirection: 'down' }),
+      ArrowUp: () =>
+        this.publisher.setState({ mode: 'selection', arrowDirection: 'up' }),
       Enter: () => {
         e.preventDefault();
         if (this.isValidTarget(target)) {
-          this.publisher.setState({ mode: 'waiting', selectedValue: target.textContent, currentValue: target.value });
+          this.publisher.setState({
+            mode: 'waiting',
+            selectedValue: target.textContent,
+            currentValue: target.value
+          });
         }
       }
     };
@@ -56,20 +62,42 @@ class SearchBarUI extends Subscriber {
   }
 
   isValidTarget(target) {
-    return target.className === 'suggestions' || target.className === 'keywords' || target === this.inputEl;
+    return (
+      target.className === 'suggestions' ||
+      target.className === 'keywords' ||
+      target === this.inputEl
+    );
   }
 
   addClickEvent() {
-    _.on(this.buttonEl, 'click', this.handleClick.bind(this));
+    const funcMap = {
+      keywords: target => this.handleClick(target),
+      suggestions: target => this.handleClick(target)
+    };
+    _.delegate(this.inputEl.closest('form'), 'click', 'className', funcMap);
+    _.on(this.buttonEl, 'click', this.handleBtnClick.bind(this));
   }
 
-  handleClick(e) {
+  handleClick(target) {
+    if (this.isValidTarget(target)) {
+      this.publisher.setState({
+        mode: 'waiting',
+        selectedValue: target.textContent,
+        currentValue: target.value
+      });
+    }
+  }
+
+  handleBtnClick(e) {
     e.preventDefault();
-    this.publisher.setState({ mode: 'waiting', currentValue: this.inputEl.value })
+    this.publisher.setState({
+      mode: 'waiting',
+      currentValue: this.inputEl.value
+    });
   }
 
   render({ mode, selectedValue }) {
-    if ((mode !== 'waiting') || !selectedValue) return;
+    if (mode !== 'waiting' || !selectedValue) return;
     this.inputEl.value = selectedValue;
     this.inputEl.focus();
   }
