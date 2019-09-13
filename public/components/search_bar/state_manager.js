@@ -1,143 +1,151 @@
-import * as _ from '../../utils/allenibrary.js'
-import Publisher from '../../utils/publisher.js'
-import { INITIAL_IDX, MAX_SUGGESTIONS } from './constants.js'
+/* eslint-disable class-methods-use-this */
+import * as _ from "../../utils/allenibrary.js";
+import Publisher from "../../utils/publisher.js";
+import {INITIAL_IDX, MAX_SUGGESTIONS} from "./constants.js";
 
 class StateManager extends Publisher {
-  constructor({ config }) {
-    super();
-    this.state = {
-      mode: 'waiting',
-      recentKeywords: [],
-      suggestions: {},
-      selectedIdx: INITIAL_IDX,
-      prevIdx: INITIAL_IDX
-    }
-    this.config = {
-      url: config.url,
-      suggestionDelay: config.suggestionDelay,
-      maxRecentKeywords: config.maxRecentKeywords
-    }
-  }
+	constructor({config}) {
+		super();
+		this.state = {
+			mode: "waiting",
+			recentKeywords: [],
+			suggestions: {},
+			selectedIdx: INITIAL_IDX,
+			prevIdx: INITIAL_IDX,
+		};
+		this.config = {
+			url: config.url,
+			suggestionDelay: config.suggestionDelay,
+			maxRecentKeywords: config.maxRecentKeywords,
+		};
+	}
 
-  setState(state) {
-    const config = this.config;
-    const initialIdx = INITIAL_IDX;
-    const maxSuggestions = MAX_SUGGESTIONS;
+	setState(state) {
+		const config = this.config;
+		const initialIdx = INITIAL_IDX;
+		const maxSuggestions = MAX_SUGGESTIONS;
 
-    const actionMap = {
-      recentKeywords: (params) => this.processRecentKeywordsMode(params),
-      suggestion: (params) => this.processSuggestionMode(params),
-      waiting: (params) => this.processWaitingMode(params),
-      selection: (params) => this.processSelectionMode(params)
-    }
-    actionMap[state.mode]({ state, config, initialIdx, maxSuggestions });
-  }
+		const actionMap = {
+			recentKeywords: params => this.processRecentKeywordsMode(params),
+			suggestion: params => this.processSuggestionMode(params),
+			waiting: params => this.processWaitingMode(params),
+			selection: params => this.processSelectionMode(params),
+		};
 
-  processRecentKeywordsMode({ state, initialIdx }) {
-    this.state = {
-      ...this.state,
-      ...state,
-      selectedIdx: initialIdx,
-      maxIdx: this.state.recentKeywords.length - 1
-    };
-    super.notify(this.state);
-  }
+		actionMap[state.mode]({state, config, initialIdx, maxSuggestions});
+	}
 
-  processSuggestionMode({ state, config, initialIdx, maxSuggestions }) {
-    this.state = {
-      ...this.state,
-      ...state,
-      selectedIdx: initialIdx,
-      maxIdx: maxSuggestions - 1
-    };
-    const prefix = this.state.currentValue;
-    this.hasCachedSuggestion(prefix)
-      ? this.notifyCachedSuggestions(config)
-      : this.fetchSuggestions(prefix, config);
-  }
+	processRecentKeywordsMode({state, initialIdx}) {
+		this.state = {
+			...this.state,
+			...state,
+			selectedIdx: initialIdx,
+			maxIdx: this.state.recentKeywords.length - 1,
+		};
+		super.notify(this.state);
+	}
 
-  hasCachedSuggestion(prefix) {
-    return this.state.suggestions[prefix];
-  }
+	processSuggestionMode({state, config, initialIdx, maxSuggestions}) {
+		this.state = {
+			...this.state,
+			...state,
+			selectedIdx: initialIdx,
+			maxIdx: maxSuggestions - 1,
+		};
+		const prefix = this.state.currentValue;
 
-  async notifyCachedSuggestions({ suggestionDelay }) {
-    await _.makeDelay(suggestionDelay);
-    super.notify(this.state);
-  }
+		this.hasCachedSuggestion(prefix) ?
+      this.notifyCachedSuggestions(config) :
+      this.fetchSuggestions(prefix, config);
+	}
 
-  async fetchSuggestions(prefix, { url, suggestionDelay }) {
-    let body = {};
-    const targetUrl = new URL(url);
-    targetUrl.search = new URLSearchParams({ prefix });
+	hasCachedSuggestion(prefix) {
+		return this.state.suggestions[prefix];
+	}
 
-    try {
-      const response = await fetch(targetUrl);
-      if (!response.ok) throw Error(`${response.status}_ERROR`);
-      body = await response.json();
-    }
-    catch (err) {
-      console.error(err);
-      super.notify(this.state);
-      return;
-    }
-    this.state = this.updateSuggestions(body.suggestions, prefix, this.state);
-    await _.makeDelay(suggestionDelay);
-    super.notify(this.state);
-  }
+	async notifyCachedSuggestions({suggestionDelay}) {
+		await _.makeDelay(suggestionDelay);
+		super.notify(this.state);
+	}
 
-  updateSuggestions(suggestions, prefix, state) {
-    const newState = { ...state };
-    newState.suggestions[prefix] = suggestions.map(el => el.value);
-    return newState;
-  }
+	async fetchSuggestions(prefix, {url, suggestionDelay}) {
+		let body = {};
+		const targetUrl = new URL(url);
 
-  processWaitingMode({ state, config: { maxRecentKeywords } }) {
-    this.state = { ...this.state, ...state };
-    this.state = this.updateRecentKeywords(this.state, maxRecentKeywords);
-    super.notify(this.state);
-  }
+		targetUrl.search = new URLSearchParams({prefix});
 
-  updateRecentKeywords(state, maxRecentKeywords) {
-    let currentValue = state.currentValue;
-    const newKeywords = [...state.recentKeywords];
+		try {
+			const response = await fetch(targetUrl);
 
-    if (!currentValue) return state;
+			if (!response.ok) throw Error(`${response.status}_ERROR`);
+			body = await response.json();
+		} catch (err) {
+			console.error(err);
+			super.notify(this.state);
+			return;
+		}
+		this.state = this.updateSuggestions(body.suggestions, prefix, this.state);
+		await _.makeDelay(suggestionDelay);
+		super.notify(this.state);
+	}
 
-    currentValue = currentValue.trim();
-    if (newKeywords.includes(currentValue)) {
-      newKeywords.splice(newKeywords.indexOf(currentValue), 1);
-    }
-    if (newKeywords.length >= maxRecentKeywords) {
-      newKeywords.pop();
-    }
-    newKeywords.unshift(currentValue);
-    state.recentKeywords = newKeywords;
-    return state;
-  }
+	updateSuggestions(suggestions, prefix, state) {
+		const newState = {...state};
 
-  processSelectionMode({ state }) {
-    this.state = { ...this.state, ...state }
-    this.state = this.updateSelectedIdx(this.state);
-    super.notify(this.state);
-  }
+		newState.suggestions[prefix] = suggestions.map(el => el.value);
+		return newState;
+	}
 
-  updateSelectedIdx(state) {
-    const newState = { ...state };
-    newState.prevIdx = newState.selectedIdx;
+	processWaitingMode({state, config: {maxRecentKeywords}}) {
+		this.state = {...this.state, ...state};
+		this.state = this.updateRecentKeywords(this.state, maxRecentKeywords);
+		super.notify(this.state);
+	}
 
-    const directionMap = {
-      down: () => this.setSelectedIdx(newState, newState.maxIdx, 0, 'down'),
-      up: () => this.setSelectedIdx(newState, 0, newState.maxIdx, 'up')
-    }
-    return directionMap[newState.arrowDirection]();
-  }
+	updateRecentKeywords(state, maxRecentKeywords) {
+		let currentValue = state.currentValue;
+		const newKeywords = [...state.recentKeywords];
 
-  setSelectedIdx(state, fromIdx, toIdx, direction) {
-    const increment = direction === 'down' ? 1 : -1;
-    if (state.selectedIdx === fromIdx) state.selectedIdx = toIdx;
-    else state.selectedIdx += increment;
-    return state;
-  }
+		if (!currentValue) return state;
+
+		currentValue = currentValue.trim();
+		if (newKeywords.includes(currentValue)) {
+			newKeywords.splice(newKeywords.indexOf(currentValue), 1);
+		}
+		if (newKeywords.length >= maxRecentKeywords) {
+			newKeywords.pop();
+		}
+		newKeywords.unshift(currentValue);
+		state.recentKeywords = newKeywords;
+		return state;
+	}
+
+	processSelectionMode({state}) {
+		this.state = {...this.state, ...state};
+		this.state = this.updateSelectedIdx(this.state);
+		super.notify(this.state);
+	}
+
+	updateSelectedIdx(state) {
+		const newState = {...state};
+
+		newState.prevIdx = newState.selectedIdx;
+
+		const directionMap = {
+			down: () => this.setSelectedIdx(newState, newState.maxIdx, 0, "down"),
+			up: () => this.setSelectedIdx(newState, 0, newState.maxIdx, "up"),
+		};
+
+		return directionMap[newState.arrowDirection]();
+	}
+
+	setSelectedIdx(state, fromIdx, toIdx, direction) {
+		const increment = direction === "down" ? 1 : -1;
+
+		if (state.selectedIdx === fromIdx) state.selectedIdx = toIdx;
+		else state.selectedIdx += increment;
+		return state;
+	}
 }
 
 export default StateManager;
