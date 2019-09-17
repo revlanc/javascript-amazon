@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import * as _ from '../../utils/allenibrary.js';
 import Subscriber from '../../utils/subscriber.js';
 
@@ -15,6 +16,34 @@ class SearchBarUI extends Subscriber {
     this.addKeyupEvent();
     this.addKeydownEvent();
     this.addClickEvent();
+    this.addHoverEvent();
+    this.addMouseOutEvent();
+  }
+
+  addMouseOutEvent() {
+    const funcMap = {
+      suggestions: target => this.handleMouseOut(target),
+      keywords: target => this.handleMouseOut(target)
+    };
+
+    _.delegate(this.inputEl.closest('form'), 'mouseout', 'className', funcMap);
+  }
+
+  handleMouseOut(target) {
+    _.setCssStyle(target, 'all', 'none');
+  }
+
+  addHoverEvent() {
+    const funcMap = {
+      suggestions: target => this.handleHover(target),
+      keywords: target => this.handleHover(target)
+    };
+
+    _.delegate(this.inputEl.closest('form'), 'mouseover', 'className', funcMap);
+  }
+
+  handleHover(target) {
+    _.setCssStyle(target, 'backgroundColor', '#f1f2f6');
   }
 
   addFocusEvent() {

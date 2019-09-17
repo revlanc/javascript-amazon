@@ -32,8 +32,7 @@ class RecentKeywordsUI extends Subscriber {
   }
 
   renderSelection({ prevIdx, selectedIdx }) {
-    const ul = this.targetEl;
-    const lists = ul.children;
+    const lists = this.targetEl.children;
 
     if (!lists.length) return;
 
@@ -52,7 +51,7 @@ class RecentKeywordsUI extends Subscriber {
     if (!recentKeywords.length) return;
 
     const tpl = recentKeywords.reduce(
-      (acc, curr) => `${acc}<li class='keywords' tabindex=-1>${curr}</li>`,
+      (acc, curr, i) => `${acc}<li class='keywords' data-id=${i}>${curr}</li>`,
       ''
     );
 

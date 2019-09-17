@@ -45,17 +45,16 @@ class SuggestionUI extends Subscriber {
       return;
     }
 
-    const tpl = suggestions.reduce((acc, curr) => {
+    const tpl = suggestions.reduce((acc, curr, i) => {
       curr = curr.replace(prefix, '');
-      return `${acc}<li class='suggestions' tabindex=-1>${prefix}<b class='boldedSuggestion'>${curr}</b></li>`;
+      return `${acc}<li class='suggestions' data-id=${i}>${prefix}<b class='boldedSuggestion'>${curr}</b></li>`;
     }, '');
 
     this.targetEl.innerHTML = tpl;
   }
 
   renderSelection({ prevIdx, selectedIdx }) {
-    const ul = this.targetEl;
-    const lists = ul.children;
+    const lists = this.targetEl.children;
 
     if (!lists.length) return;
 
