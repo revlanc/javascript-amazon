@@ -31,7 +31,7 @@ class SearchBarUI extends Subscriber {
 
   handleKeyup({ target, key }) {
     if (key.length === 1 || key === 'Backspace') {
-      const param = { mode: 'suggestion', currentValue: target.value };
+      const param = { mode: 'suggestion', currentInput: target.value };
 
       _.setDebounce(p => this.publisher.setState(p), 1200, param);
     }
@@ -44,19 +44,20 @@ class SearchBarUI extends Subscriber {
   handleKeydown(e) {
     const { target, key } = e;
     const keyMap = {
-      ArrowDown: () =>
-        this.publisher.setState({ mode: 'selection', arrowDirection: 'down' }),
-      ArrowUp: () =>
-        this.publisher.setState({ mode: 'selection', arrowDirection: 'up' }),
+      ArrowDown: () => {
+        e.preventDefault();
+        this.publisher.setState({ mode: 'selection', arrowDirection: 'down' });
+      },
+      ArrowUp: () => {
+        e.preventDefault();
+        this.publisher.setState({ mode: 'selection', arrowDirection: 'up' });
+      },
       Enter: () => {
         e.preventDefault();
-        if (this.isValidTarget(target)) {
-          this.publisher.setState({
-            mode: 'waiting',
-            selectedValue: target.textContent,
-            currentValue: target.value
-          });
-        }
+        this.publisher.setState({
+          mode: 'submit',
+          currentInput: target.value
+        });
       }
     };
 
@@ -85,15 +86,13 @@ class SearchBarUI extends Subscriber {
   handleClick(target) {
     if (this.isValidTarget(target)) {
       this.publisher.setState({
-        mode: 'waiting',
-        selectedValue: target.textContent,
-        currentValue: target.value
+        mode: 'submit',
+        selectedKeyword: target.textContent
       });
     } else {
       this.publisher.setState({
-        mode: 'waiting',
-        selectedValue: target.closest('li').textContent,
-        currentValue: target.value
+        mode: 'submit',
+        selectedKeyword: target.closest('li').textContent
       });
     }
   }
@@ -101,15 +100,14 @@ class SearchBarUI extends Subscriber {
   handleBtnClick(e) {
     e.preventDefault();
     this.publisher.setState({
-      mode: 'waiting',
-      currentValue: this.inputEl.value
+      mode: 'submit',
+      currentInput: this.inputEl.value
     });
   }
 
-  render({ mode, selectedValue }) {
-    if (mode !== 'waiting' || !selectedValue) return;
-    this.inputEl.value = selectedValue;
-    this.inputEl.focus();
+  render({ mode, selectedKeyword }) {
+    if (mode === 'selection') this.inputEl.value = selectedKeyword;
+    if (mode === 'submit') this.inputEl.value = '';
   }
 }
 

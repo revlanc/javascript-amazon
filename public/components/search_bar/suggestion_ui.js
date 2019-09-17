@@ -2,10 +2,7 @@ import * as _ from '../../utils/allenibrary.js';
 import Subscriber from '../../utils/subscriber.js';
 
 class SuggestionUI extends Subscriber {
-  constructor({
-    stateManager,
-    config: { searchFormSelector, selectedElementColor }
-  }) {
+  constructor({ stateManager, config: { searchFormSelector, selectedElementColor } }) {
     super();
     this.init(stateManager, searchFormSelector);
     this.selectedElementColor = selectedElementColor;
@@ -28,14 +25,14 @@ class SuggestionUI extends Subscriber {
       recentKeywords: () => this.renderBlank(),
       suggestion: state => this.renderSuggestion(state),
       selection: state => this.renderSelection(state),
-      waiting: () => this.renderBlank()
+      submit: () => this.renderBlank()
     };
 
     actionMap[state.mode](state);
   }
 
   renderSuggestion(state) {
-    const prefix = state.currentValue;
+    const prefix = state.currentInput;
 
     if (!prefix) {
       this.renderBlank();
@@ -68,7 +65,6 @@ class SuggestionUI extends Subscriber {
 
     const selectedEl = lists[selectedIdx];
 
-    selectedEl.focus();
     _.setCssStyle(selectedEl, 'backgroundColor', this.selectedElementColor);
   }
 
