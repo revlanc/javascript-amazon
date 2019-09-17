@@ -158,7 +158,7 @@ class StateManager extends Publisher {
   setSelectedIdx(state, fromIdx, toIdx, direction) {
     const increment = direction === 'down' ? 1 : -1;
 
-    if (state.selectedIdx === fromIdx) state.selectedIdx = toIdx;
+    if (state.selectedIdx === fromIdx || state.selectedIdx < 0) state.selectedIdx = toIdx;
     else state.selectedIdx += increment;
     return state;
   }
