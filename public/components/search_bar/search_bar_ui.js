@@ -86,7 +86,7 @@ class SearchBarUI extends Subscriber {
         e.preventDefault();
         this.publisher.setState({
           mode: 'submit',
-          currentInput: target.value
+          selectedKeyword: target.value
         });
       }
     };
@@ -131,7 +131,7 @@ class SearchBarUI extends Subscriber {
     e.preventDefault();
     this.publisher.setState({
       mode: 'submit',
-      currentInput: this.inputEl.value
+      selectedKeyword: this.inputEl.value
     });
   }
 

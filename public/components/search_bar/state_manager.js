@@ -104,12 +104,13 @@ class StateManager extends Publisher {
     const newState = { ...this.state, ...state };
 
     this.state = this.updateRecentKeywords(newState, maxRecentKeywords);
-    this.state.selectedKeyword = this.getSelectedKeyword(this.state);
     super.notify(this.state);
   }
 
   updateRecentKeywords(state, maxRecentKeywords) {
     let { selectedKeyword } = state;
+
+    if (!selectedKeyword) selectedKeyword = this.getSelectedKeyword(state);
     const recents = [...state.recentKeywords];
 
     if (!selectedKeyword) return state;
@@ -130,8 +131,9 @@ class StateManager extends Publisher {
     const { prevMode, recentKeywords, suggestions, currentInput, selectedIdx } = state;
 
     if (prevMode === 'recentKeywords') return recentKeywords[selectedIdx];
-    if (!this.hasCachedSuggestion(currentInput)) return currentInput;
-    return suggestions[currentInput][selectedIdx];
+    if (this.hasCachedSuggestion(currentInput))
+      return suggestions[currentInput][selectedIdx];
+    return currentInput;
   }
 
   processSelectionMode({ state }) {
