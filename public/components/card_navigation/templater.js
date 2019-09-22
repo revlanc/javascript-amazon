@@ -1,5 +1,4 @@
 import { $ } from '../../utils/allenibrary.js';
-//TODO: import config.js for css selector
 
 export default class Templater {
   getDescLists = desc => {
