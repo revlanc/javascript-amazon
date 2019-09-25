@@ -17,6 +17,6 @@ export default class Publisher {
 
   setState(state) {
     this.state = { ...this.state, ...state };
-    this.notify(name, this.state);
+    this.notify(this.state);
   }
 }
