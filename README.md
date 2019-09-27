@@ -1,6 +1,6 @@
 # Amazon UI Clone - Carousel & Keyword suggestion
 
-> 아마존의 캐러셀과 검색어 자동완성 ui를 바닐라 자바스크립트로 구현하기
+> vanilla javascript로 아마존의 캐러셀 UI와 검색 자동완성 UI 구현하기  
 > 사용 기술 : html, css, javascript, express, node.js
 
 ### Index
