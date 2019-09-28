@@ -38,6 +38,7 @@
 
 ![suggestion-demo](https://user-images.githubusercontent.com/42905468/65383478-17a09480-dd51-11e9-8aa4-abfde5fa4788.gif)
 
+
 ---
 
 ## 2. 설계
@@ -66,6 +67,7 @@
 - searchBarUI, suggestionUI, recentKeywordsUI가 stateManager를 주입받아서 구독합니다.
 - event trigger > setState > process\_\_mode > updateState > notify > render의 흐름으로 구현했습니다.
 
+
 ---
 
 ## 3. 고민한 점
@@ -81,6 +83,7 @@
 5. 상태를 관리하는 stateManager와 rendering을 담당하는 pagination과 carousel 클래스로 분리함.
 
 > model과 view를 분리함으로써 변경이 있더라도 다른 부분에 영향이 없는 구조를 구현.
+
 
 ### 3-2. 이벤트 발생 > 상태 변경 > 렌더링으로 이어지는 메시지 흐름
 
@@ -103,6 +106,7 @@
 
 > handleBtnClick > setState > notify > render의 흐름 구현
 
+
 ### 3-3. 많은 이벤트가 발생하는 경우의 메시지 핸들링
 
 ![setState-code](https://user-images.githubusercontent.com/42905468/65531540-192ab200-df35-11e9-9f81-6d18091ee2f2.png)
@@ -113,6 +117,7 @@
 4. 이벤트 발생 시 수행해야 할 동작(기능)을 recent, suggest, select, submit 4가지 mode로 구분함.
 
 > mode로 구분하니 '분기'를 보다 명시적으로 인지할 수 있고 동작흐름을 파악하기 수월해짐.
+
 
 ---
 
@@ -137,14 +142,14 @@ model과 view를 분리하고, 옵저버패턴을 활용하면 의존성이 낮�
 
 ### 아쉬운 점 & 개선할 점
 
-#### 기능 추가 시 사이드 이펙트(버그)가 쉽게 발생함
+#### 기능 추가 시 사이드 이펙트(버그)가 쉽게 발생함(검색어 자동완성)
 
 자동완성 구현시, 리액트 느낌의 이벤트 흐름을 구현하고자 했으나, 당시에는 Flux 아키텍처라든지 uni-direction같은 개념을 잘 몰랐을 때라 변화에 강한 구조를 제대로 구현하지 못한 것 같습니다.  
 mode를 좀 더 세부적으로 나눴으면 더 나았을 것 같다는 생각이 듭니다(지금은 submit mode하나에도 많은 경우의 수가 발생함). 그래도 버그가 발생하는 구간은 비교적 찾기 쉬우니 절반의 성공?  
 추후에 개선할 때 dispatcher와 reducer를 구현해서 이벤트 흐름 제어를 시도해볼 생각입니다.  
 그리고 같은 기능을 구현한 다른 사람의 코드를 포크하고 기능을 추가하면서 코드의 장단점을 느껴볼 생각입니다.
 
-#### 각각의 컴포넌트를 재사용이 불가능한 구조로 설계한 점
+#### 각각의 컴포넌트를 재사용이 불가능한 구조로 설계한 점(검색어 자동완성)
 
 자동완성 컴포넌트 중, recentKeywords와 suggestions을 나누다보니 이벤트핸들러를 등록하는 코드가 중복되어서 핸들러를 searchBar에 두었습니다. 그러다보니 모든 컴포넌트들이 재사용이 어려운 구조가 되었습니다. 지금보니 공통부분을 하나의 컴포넌트로 묶고 두 컴포넌트에서 사용되는 이벤트핸들러는 이 새로운 컴포넌트에 작성하는 형식으로 수정하면 될 것 같다는 생각이 들었습니다.
 
