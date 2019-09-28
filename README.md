@@ -37,8 +37,8 @@
 #### 검색어 자동완성 동작 모습
 
 ![suggestion-demo](https://user-images.githubusercontent.com/42905468/65383478-17a09480-dd51-11e9-8aa4-abfde5fa4788.gif)
-
-
+  
+  
 ---
 
 ## 2. 설계
@@ -66,7 +66,7 @@
 
 - searchBarUI, suggestionUI, recentKeywordsUI가 stateManager를 주입받아서 구독합니다.
 - event trigger > setState > process\_\_mode > updateState > notify > render의 흐름으로 구현했습니다.
-
+  
 
 ---
 
@@ -83,7 +83,7 @@
 5. 상태를 관리하는 stateManager와 rendering을 담당하는 pagination과 carousel 클래스로 분리함.
 
 > model과 view를 분리함으로써 변경이 있더라도 다른 부분에 영향이 없는 구조를 구현.
-
+  
 
 ### 3-2. 이벤트 발생 > 상태 변경 > 렌더링으로 이어지는 메시지 흐름
 
@@ -105,7 +105,7 @@
 4. subscriber는 render메서드를 구현하고 render메서드 안에서 DOM조작.
 
 > handleBtnClick > setState > notify > render의 흐름 구현
-
+  
 
 ### 3-3. 많은 이벤트가 발생하는 경우의 메시지 핸들링
 
@@ -117,7 +117,7 @@
 4. 이벤트 발생 시 수행해야 할 동작(기능)을 recent, suggest, select, submit 4가지 mode로 구분함.
 
 > mode로 구분하니 '분기'를 보다 명시적으로 인지할 수 있고 동작흐름을 파악하기 수월해짐.
-
+  
 
 ---
 
